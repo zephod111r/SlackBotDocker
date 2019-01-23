@@ -3,7 +3,7 @@ import { URLSearchParams } from 'url';
 import { getCard } from '../utils/card';
 
 const handleEvent = (params) => {
-	const cards = params.text.match(/\{\{(.+)\}\}/g).map(check => check.replace(/[{}]/g, ''))
+	const cards = params.text.match(/\{\{(.+?)\}\}/g).map(check => check.replace(/[{}]/g, ''))
 
 	cards.forEach(card => {
 		getCard(card).then(data => {
