@@ -19,15 +19,27 @@ const getCardColour = card => {
 	return backgroundColours[backgroundIndex] || '#CDBA86';
 }
 
+const symbols = {
+	'{T}': ':mtg_tap:',
+	'{∞}': ':mtg_infinite:',
+}
+const replaceSymbol = match => symbols[match] || `:mtg_${match.replace(/[\{\}\/]/g, '').toLowerCase()}:`
+const parseSymbols = string => string.replace(/(\{.+?\})/g, replaceSymbol)
+
+
 const get = (params) => {
 	const cardPromise = fetch(`${CardAPIBase}?code=${code}&name=${params.text}`, { method: 'get' })
 	.then(res => res.json())
 	.then(data => {
 		const attachments = data.slice(0, 3).map(res => {
 			const fields = [
+				{
+					title: "Gatherer link",
+					value: `*<http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${encodeURIComponent(res.card.name)}|${res.card.name}>*`
+				},
                 {
                     title: "Mana cost",
-                    value: res.card.manaCost,
+                    value: `\u2063${parseSymbols(res.card.manaCost)}`,
                     short: true 
                 }
             ];
@@ -42,7 +54,7 @@ const get = (params) => {
 
 			return {
 	        	title: res.card.name,
-	            text: res.card.text,
+	            text: parseSymbols(res.card.text),
 	            color: getCardColour(res.card),
 	            "image_url": res.card.image.replace("https://", "http://"),
 	            fields
