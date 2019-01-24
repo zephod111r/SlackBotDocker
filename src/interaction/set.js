@@ -1,5 +1,12 @@
-const handleEvent = ({actions}) => {
-	const set = actions.selected_options[0].value
+import fetch from 'node-fetch';
+import { URLSearchParams } from 'url';
+import { getCard } from '../utils/card';
+
+const handleInteraction = ({actions, original_message, response_url}) => {
+	const set = actions[0].selected_options[0].value;
+	const card = actions[0].name;
+
+	console.log(card, set)
 
 	getCard(card, set).then(data => {
 
@@ -7,7 +14,7 @@ const handleEvent = ({actions}) => {
 			replace_original: true
 		});
 
-		fetch(params.response_url, {
+		fetch(response_url, {
 			method: "POST",
 			headers: {
 				"Content-type": "application/json"
@@ -20,5 +27,5 @@ const handleEvent = ({actions}) => {
 }
 
 export {
-	handleEvent
+	handleInteraction
 };

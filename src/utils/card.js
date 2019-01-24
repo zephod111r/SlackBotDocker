@@ -43,8 +43,10 @@ export const getCard = (card, setName) => fetch(`${CardAPIBase}?code=${code}&nam
                 }
             ];
 
-            const setInd = setName ? res.card.sets.indexOf(setName) : 0;
+            const setInd = setName ? res.card.sets.findIndex(set => set.setname === setName) : 0;
             const set = res.card.sets[setInd];
+
+            console.log(setInd, set)
 
             if(set.price) {
             	fields.push({
@@ -64,21 +66,24 @@ export const getCard = (card, setName) => fetch(`${CardAPIBase}?code=${code}&nam
             if(res.card.sets.length > 1) {
             	actions = [
                 	{
-                		name: "card_sets",
+                		name: res.card.name,
 	                    text: "Pick another set...",
 	                    type: "select",
-	                    options: [res.card.sets.map((set, ind) => ({text:set.setname, value:set.setname}))]
+	                    options: res.card.sets.map((set, ind) => ({text:set.setname, value:set.setname}))
                 	}
                 ]
             }
+
+            console.log(actions)
 
 			return {
 	        	title: res.card.name,
 	            text: parseSymbols(res.card.text),
 	            color: getCardColour(res.card),
-	            "image_url": set.image.replace("https://", "http://"),
+	            image_url: set.image.replace("https://", "http://"),
 	            fields,
-	            actions
+	            actions,
+	            callback_id: 'cardSet'
 	        };
 	    });
 

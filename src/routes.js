@@ -4,8 +4,13 @@ import * as cotd from './commands/cotd';
 import * as card from './commands/card';
 import * as verification from './events/verification';
 import * as message from './events/message';
+import * as set from './interaction/set';
 
 const router = new express.Router();
+
+router.get('/healthcheck', async (req, res) => {
+  res.status(200).header('Content-Type', 'application/json').send(JSON.stringify({status: 'Good'}))
+});
 
 const commandMap = {
   '/cotd' : params => cotd.handleCommand(params),
@@ -15,11 +20,6 @@ const commandMap = {
     message: `${params.command} not found.`
   })
 }
-
-router.get('/healthcheck', async (req, res) => {
-  res.status(200).header('Content-Type', 'application/json').send(JSON.stringify({status: 'Good'}))
-});
-
 router.post('/slack/command', async (req, res) => {
   const promise = (commandMap[req.body.command] ? commandMap[req.body.command] : commandMap['404'])(req.body)
 
@@ -31,6 +31,23 @@ router.post('/slack/command', async (req, res) => {
   })
 });
 
+const interactionMap = {
+  'cardSet' : params => set.handleInteraction(params),
+  '404': params => Promise.reject({
+    code: 404,
+    message: `${params.callback_id} not found.`
+  })
+}
+router.post('/slack/interaction', async (req, res) => {
+  const promise = (interactionMap[req.body.callback_id] ? interactionMap[req.body.callback_id] : interactionMap['404'])(req.body)
+
+  promise.then(data => {
+    return res.status(200).header('Content-Type', 'application/json').send(JSON.stringify(data))
+  }, err => {
+    log.error(err);
+    return res.status(err.code || 500).send(err.message || 'Something blew up. We\'re looking into it.');
+  })
+});
 
 const eventMap = {
   "url_verification": params => verification.handleEvent(params),
