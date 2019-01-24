@@ -27,7 +27,7 @@ const symbols = {
 const replaceSymbol = match => symbols[match] || `:mtg_${match.replace(/[\{\}\/]/g, '').toLowerCase()}:`
 const parseSymbols = string => string.replace(/(\{.+?\})/g, replaceSymbol)
 
-export const getCard = (card) => fetch(`${CardAPIBase}?code=${code}&name=${card}`, { method: 'get' })
+export const getCard = (card, setName) => fetch(`${CardAPIBase}?code=${code}&name=${card}`, { method: 'get' })
 	.then(res => res.json())
 	.then(data => {
 		const attachments = data.slice(0, 3).map(res => {
@@ -43,15 +43,33 @@ export const getCard = (card) => fetch(`${CardAPIBase}?code=${code}&name=${card}
                 }
             ];
 
-            const setInd = 0;
+            const setInd = setName ? res.card.sets.indexOf(setName) : 0;
             const set = res.card.sets[setInd];
 
             if(set.price) {
             	fields.push({
                     title: "Price",
-                    value: res.card.price,
+                    value: set.price,
                     short: true 
                 })
+            }
+        	fields.push({
+                title: "Set",
+                value: `*${res.card.sets[setInd].setname}*`,
+                short: true
+            })
+
+            let actions = null;
+
+            if(res.card.sets.length > 1) {
+            	actions = [
+                	{
+                		name: "card_sets",
+	                    text: "Pick another set...",
+	                    type: "select",
+	                    options: [res.card.sets.map((set, ind) => ({text:set.setname, value:set.setname}))]
+                	}
+                ]
             }
 
 			return {
@@ -59,7 +77,8 @@ export const getCard = (card) => fetch(`${CardAPIBase}?code=${code}&name=${card}
 	            text: parseSymbols(res.card.text),
 	            color: getCardColour(res.card),
 	            "image_url": set.image.replace("https://", "http://"),
-	            fields
+	            fields,
+	            actions
 	        };
 	    });
 
