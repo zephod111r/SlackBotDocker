@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
+import { log } from '../utils';
 
 const CardAPIBase = "https://mtgbotapi.azurewebsites.net/api/Cards";
 const code = process.env.API_CONNECTION;
@@ -68,6 +69,7 @@ export const getCard = (card) => fetch(`${CardAPIBase}?code=${code}&name=${card}
 		}
 	})
 	.catch(err => {
+		log.error(err);
 		return {
 			text: `No results for *${card}*`,
 	    	response_type: "in_channel",
