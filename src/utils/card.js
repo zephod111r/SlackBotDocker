@@ -43,7 +43,10 @@ export const getCard = (card) => fetch(`${CardAPIBase}?code=${code}&name=${card}
                 }
             ];
 
-            if(res.card.price) {
+            const setInd = 0;
+            const set = res.card.sets[setInd];
+
+            if(set.price) {
             	fields.push({
                     title: "Price",
                     value: res.card.price,
@@ -55,7 +58,7 @@ export const getCard = (card) => fetch(`${CardAPIBase}?code=${code}&name=${card}
 	        	title: res.card.name,
 	            text: parseSymbols(res.card.text),
 	            color: getCardColour(res.card),
-	            "image_url": res.card.image.replace("https://", "http://"),
+	            "image_url": set.image.replace("https://", "http://"),
 	            fields
 	        };
 	    });
