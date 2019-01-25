@@ -23,6 +23,8 @@ const getCardColour = card => {
 const symbols = {
 	'{T}': ':mtg_tap:',
 	'{∞}': ':mtg_infinite:',
+	'{100}': ':mtg_100-1::mtg_100-2:',
+	'{1000000}': ':mtg_1000000-1::mtg_1000000-2::mtg_1000000-3::mtg_1000000-4:',
 }
 const replaceSymbol = match => symbols[match] || `:mtg_${match.replace(/[\{\}\/]/g, '').toLowerCase()}:`
 const parseSymbols = string => string.replace(/(\{.+?\})/g, replaceSymbol)
