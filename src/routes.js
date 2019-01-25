@@ -5,6 +5,7 @@ import * as card from './commands/card';
 import * as verification from './events/verification';
 import * as message from './events/message';
 import * as set from './interaction/set';
+import * as searchError from './interaction/searchError';
 
 const router = new express.Router();
 
@@ -33,8 +34,9 @@ router.post('/slack/command', async (req, res) => {
 
 const interactionMap = {
   'cardSet' : params => set.handleInteraction(params),
+  'searchMiss' : params => searchError.handleInteraction(params),
   '404': params => Promise.reject({
-    code: 404,
+    code: 200,
     message: `${params.callback_id} not found.`
   })
 }
@@ -47,7 +49,11 @@ router.post('/slack/interaction', async (req, res) => {
     return res.status(200).header('Content-Type', 'application/json').send(JSON.stringify(data))
   }, err => {
     log.error(err);
-    return res.status(err.code || 500).send(err.message || 'Something blew up. We\'re looking into it.');
+    return res.status(err.code || 500).send(JSON.stringify(
+      {
+        text: err.message || 'Something blew up. We\'re looking into it.'
+      }
+    ));
   })
 });
 
