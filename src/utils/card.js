@@ -27,78 +27,83 @@ const symbols = {
 const replaceSymbol = match => symbols[match] || `:mtg_${match.replace(/[\{\}\/]/g, '').toLowerCase()}:`
 const parseSymbols = string => string.replace(/(\{.+?\})/g, replaceSymbol)
 
-export const getCard = (card, setName) => fetch(`${CardAPIBase}?code=${code}&name=${card}`, { method: 'get' })
-	.then(res => res.json())
-	.then(data => {
-		const attachments = data.slice(0, 3).map(res => {
-			const fields = [
-				{
-					title: "Gatherer link",
-					value: `*<http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${encodeURIComponent(res.card.name)}|${res.card.name}>*`
-				},
-                {
-                    title: "Mana cost",
-                    value: `\u2063${parseSymbols(res.card.manaCost)}`,
-                    short: true 
-                }
-            ];
+export const getCard = (card, setName) => {
 
-            const setInd = setName ? res.card.sets.findIndex(set => set.setname === setName) : 0;
-            const set = res.card.sets[setInd];
+	if(!code) {
+		return Promise.resolve({
+			text: 'No code installed, cannot retrieve card details'
+		})
+	}
 
-            console.log(setInd, set)
+	return fetch(`${CardAPIBase}?code=${code}&name=${card}`, { method: 'get' })
+		.then(res => res.json())
+		.then(data => {
+			const attachments = data.slice(0, 3).map(res => {
+				const fields = [
+					{
+						title: "Gatherer link",
+						value: `<http://gatherer.wizards.com/Pages/Card/Details.aspx?name=${encodeURIComponent(res.card.name)}|${res.card.name}>`
+					},
+	                {
+	                    title: "Mana cost",
+	                    value: `\u2063${parseSymbols(res.card.manaCost)}`,
+	                    short: true 
+	                }
+	            ];
 
-            if(set.price) {
-            	fields.push({
-                    title: "Price",
-                    value: set.price,
-                    short: true 
-                })
-            }
-        	fields.push({
-                title: "Set",
-                value: `*${res.card.sets[setInd].setname}*`,
-                short: true
-            })
+	            const setInd = setName ? res.card.sets.findIndex(set => set.setname === setName) : 0;
+	            const set = res.card.sets[setInd];
 
-            let actions = null;
+	            if(set.price) {
+	            	fields.push({
+	                    title: "Price",
+	                    value: set.price,
+	                    short: true 
+	                })
+	            }
+	        	fields.push({
+	                title: "Set",
+	                value: `*${res.card.sets[setInd].setname}*`,
+	                short: true
+	            })
 
-            if(res.card.sets.length > 1) {
-            	actions = [
-                	{
-                		name: res.card.name,
-	                    text: "Pick another set...",
-	                    type: "select",
-	                    options: res.card.sets.map((set, ind) => ({text:set.setname, value:set.setname}))
-                	}
-                ]
-            }
+	            let actions = null;
 
-            console.log(actions)
+	            if(res.card.sets.length > 1) {
+	            	actions = [
+	                	{
+	                		name: res.card.name,
+		                    text: "Pick another set...",
+		                    type: "select",
+		                    options: res.card.sets.map((set, ind) => ({text:set.setname, value:set.setname}))
+	                	}
+	                ]
+	            }
+
+				return {
+		        	title: res.card.name,
+		            text: parseSymbols(res.card.text),
+		            color: getCardColour(res.card),
+		            image_url: set.image.replace("https://", "http://"),
+		            fields,
+		            actions,
+		            callback_id: 'cardSet'
+		        };
+		    });
+
+			const text = attachments.length === 1 ? `result for *${card}*` : `no exact match for *${card}*, showing closest`;
 
 			return {
-	        	title: res.card.name,
-	            text: parseSymbols(res.card.text),
-	            color: getCardColour(res.card),
-	            image_url: set.image.replace("https://", "http://"),
-	            fields,
-	            actions,
-	            callback_id: 'cardSet'
-	        };
-	    });
-
-		const text = attachments.length === 1 ? `result for *${card}*` : `no exact match for *${card}*, showing closest`;
-
-		return {
-			text,
-	    	response_type: "in_channel",
-	    	attachments
-		}
-	})
-	.catch(err => {
-		log.error(err);
-		return {
-			text: `No results for *${card}*`,
-	    	response_type: "in_channel",
-		}
-	})
+				text,
+		    	response_type: "in_channel",
+		    	attachments
+			}
+		})
+		.catch(err => {
+			log.error(err);
+			return {
+				text: `No results for *${card}*`,
+		    	response_type: "in_channel",
+			}
+		})
+}

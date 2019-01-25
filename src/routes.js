@@ -23,7 +23,7 @@ const commandMap = {
 router.post('/slack/command', async (req, res) => {
   const promise = (commandMap[req.body.command] ? commandMap[req.body.command] : commandMap['404'])(req.body)
 
-  promise.then(data => {
+  return promise.then(data => {
     return res.status(200).header('Content-Type', 'application/json').send(JSON.stringify(data))
   }, err => {
     log.error(err);
@@ -39,9 +39,11 @@ const interactionMap = {
   })
 }
 router.post('/slack/interaction', async (req, res) => {
-  const promise = (interactionMap[req.body.callback_id] ? interactionMap[req.body.callback_id] : interactionMap['404'])(req.body)
+  const decoded = JSON.parse(req.body.payload)
 
-  promise.then(data => {
+  const promise = (interactionMap[decoded.callback_id] ? interactionMap[decoded.callback_id] : interactionMap['404'])(decoded)
+
+  return promise.then(data => {
     return res.status(200).header('Content-Type', 'application/json').send(JSON.stringify(data))
   }, err => {
     log.error(err);
@@ -70,7 +72,7 @@ const eventCallbackMap = {
 router.post('/slack/events', async (req, res) => {
   const promise = (eventMap[req.body.type] ? eventMap[req.body.type] : eventMap['404'])(req.body)
 
-  promise.then(data => {
+  return promise.then(data => {
     return res.status(200).header('Content-Type', 'application/json').send(JSON.stringify(data))
   }, err => {
     log.error(err);
