@@ -14,7 +14,7 @@ const backgroundColours = {
 	'': '#CACBCF'
 }
 const getCardColour = card => {
-	const backgroundIndex = card.manaCost ? card.manaCost.replace(/[{}Xx/P]/g, '').split('').filter((l,i,a) => {
+	const backgroundIndex = card.manaCost ? card.manaCost.replace(/[{}Xx/P½hH]/g, '').split('').filter((l,i,a) => {
 		return isNaN(+l) && !a.slice(i+1).find(test => test === l);
 	}).join(':') : card.colorIdentity ? card.colorIdentity.join(':') : '';
 	return backgroundColours[backgroundIndex] || '#CDBA86';
@@ -23,11 +23,12 @@ const getCardColour = card => {
 const symbols = {
 	'{T}': ':mtg_tap:',
 	'{∞}': ':mtg_infinite:',
+	'{½}': ':mtg_half:',
 	'{100}': ':mtg_100-1::mtg_100-2:',
 	'{1000000}': ':mtg_1000000-1::mtg_1000000-2::mtg_1000000-3::mtg_1000000-4:',
 }
 const replaceSymbol = match => symbols[match] || `:mtg_${match.replace(/[\{\}\/]/g, '').toLowerCase()}:`
-const parseSymbols = string => string.replace(/(\{.+?\})/g, replaceSymbol)
+const parseSymbols = string => string ? string.replace(/(\{.+?\})/g, replaceSymbol) : ''
 
 export const getCard = (card, setName) => {
 
@@ -40,6 +41,7 @@ export const getCard = (card, setName) => {
 	return fetch(`${CardAPIBase}?code=${code}&name=${card}`, { method: 'get' })
 		.then(res => res.json())
 		.then(data => {
+			if(data.length === 0) return getNoCard(card);
 			return data.length === 1 ? getSingleCard(data, setName) : getOptionsCard(data)
 		})
 		.catch(err => {
@@ -52,6 +54,11 @@ export const getCard = (card, setName) => {
 		})
 }
 
+const getNoCard = name => {
+	return {
+    	text: `No match for ${name}, try again`,
+    };
+};
 const getOptionsCard = data => {
 	return {
     	text: 'No exact match found, please choose:',
@@ -123,7 +130,7 @@ const getSingleCard = (data, setName) => {
 	    	title: res.card.name,
 	        text: parseSymbols(res.card.text),
 	        color: getCardColour(res.card),
-	        image_url: set.image.replace("https://", "http://"),
+	        image_url: set.image ? set.image.replace("https://", "http://") : '',
 	        fields,
 	        actions,
 	        callback_id: 'cardSet'
