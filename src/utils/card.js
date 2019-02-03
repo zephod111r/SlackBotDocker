@@ -1,9 +1,9 @@
 import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
 import { log } from '../utils';
+import { BASE_URI, CODE } from './constants';
 
-const CardAPIBase = "https://mtgbotapi.azurewebsites.net/api/Cards";
-const code = process.env.API_CONNECTION;
+const CardAPIBase = `${BASE_URI}/Cards`;
 
 const backgroundColours = {
 	'U': '#66B6E0',
@@ -32,13 +32,13 @@ const parseSymbols = string => string ? string.replace(/(\{.+?\})/g, replaceSymb
 
 export const getCard = (card, setName) => {
 
-	if(!code) {
+	if(!CODE) {
 		return Promise.resolve({
 			text: 'No code installed, cannot retrieve card details'
 		})
 	}
 
-	return fetch(`${CardAPIBase}?code=${code}&name=${card}`, { method: 'get' })
+	return fetch(`${CardAPIBase}?code=${CODE}&name=${card}`, { method: 'get' })
 		.then(res => res.json())
 		.then(data => {
 			if(data.length === 0) return getNoCard(card);
