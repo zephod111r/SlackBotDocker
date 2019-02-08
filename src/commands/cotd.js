@@ -1,50 +1,90 @@
 import fetch from 'node-fetch';
-import { newCard, showCard, getCurrentCardData } from '../utils/cardoftheday';
+import { newCard, showCard, getCurrentCardData, guessCard, currentScore } from '../utils/cardoftheday';
+
+const handleResponse = response_url => response => 
+	fetch(response_url, {
+		method: "POST",
+		headers: {
+			"Content-type": "application/json"
+		},
+		body: JSON.stringify(response)
+	})
+
+const handleError = (response_url, text) => err => 
+	fetch(response_url, {
+		method: "POST",
+		headers: {
+			"Content-type": "application/json"
+		},
+		body: JSON.stringify({
+			text,
+			attachments: [{
+				text: err.message
+			}]
+		})
+	})
 
 const generate = (params) => {
 	const cotdPromise = newCard(params.user_id, params.channel_id);
 
-	console.log('CHANNEL ID', params)
-
 	if (params.response_url) {
-		cotdPromise.then(response => {
-			fetch(params.response_url, {
-				method: "POST",
-				headers: {
-					"Content-type": "application/json"
-				},
-				body: JSON.stringify(response)
-			})
-		}, err => fetch(params.response_url, {
-			method: "POST",
-			headers: {
-				"Content-type": "application/json"
-			},
-			body: JSON.stringify({
-				text: "Sorry something went wrong :(",
-				attachments: [{
-					text: err.message
-				}]
-			})
-		}))
+		cotdPromise.then(
+			handleResponse(params.response_url),
+			handleError(params.response_url, "Sorry something went wrong :(")
+		);
 		return Promise.resolve({
-			text: `Checking for new card...`
+			text: `Checking for new card in ${params.channel_id} by ${params.user_id}...`
 		})
 	}
 	
 	return cotdPromise;
 }
 const guess = (params) => {
-	return Promise.resolve({
-    	text: `${params.text}: Incorrect, sucker!`,
-    	response_type: "in_channel"
-	});
+	const guess = params.text.trim();
+	const cotdPromise = guessCard(params.user_id, params.channel_id, guess);
+
+	if (params.response_url) {
+		cotdPromise.then(
+			handleResponse(params.response_url),
+			handleError(params.response_url, "Sorry something went wrong :(")
+		);
+		return Promise.resolve({
+			text: `Guessing with *${guess}*...`
+		})
+	}
+	
+	return cotdPromise;
 }
 const score = (params) => {
-	return Promise.resolve({
-    	text: "Andrew is winning",
-    	response_type: "in_channel"
-	});
+	const guess = encodeURIComponent(params.text.trim());
+	const cotdPromise = currentScore(params.channel_id);
+
+	if (params.response_url) {
+		cotdPromise.then(
+			handleResponse(params.response_url),
+			handleError(params.response_url, "Sorry something went wrong :(")
+		);
+		return Promise.resolve({
+			text: `Getting score...`
+		})
+	}
+	
+	return cotdPromise;
+}
+const show = (params) => {
+	const cotdPromise = showCard(params.channel_id);
+
+	if (params.response_url) {
+		cotdPromise.then(
+			handleResponse(params.response_url),
+			handleError(params.response_url, "Sorry something went wrong :(")
+		);
+		return Promise.resolve({
+			text: `Checking for new card...`
+		})
+	}
+	
+	return cotdPromise;
 }
 
 const hintMap = [
@@ -71,62 +111,38 @@ const hint = (params) => {
 	})
 
 	if (params.response_url) {
-		cotdPromise.then(response => {
-			fetch(params.response_url, {
-				method: "POST",
-				headers: {
-					"Content-type": "application/json"
-				},
-				body: JSON.stringify(response)
-			})
-		}, err => fetch(params.response_url, {
-			method: "POST",
-			headers: {
-				"Content-type": "application/json"
-			},
-			body: JSON.stringify({
-				text: "Sorry something went wrong :(",
-				attachments: [{
-					text: err.message
-				}]
-			})
-		}));
-
+		cotdPromise.then(
+			handleResponse(params.response_url),
+			handleError(params.response_url, "Sorry something went wrong :(")
+		);
 		return Promise.resolve({
 			text: `Checking for current card...`
 		})
 	}
 	return cotdPromise;
 }
-const show = (params) => {
-	const cotdPromise = showCard(params.channel_id);
+const tellme = (params) => {
+	const cotdPromise = getCurrentCardData(params.channel_id).then(data => {
+		if (typeof data === 'string') {
+			return Promise.resolve({
+				text: '*Failed*, No COTD active to give a hint'
+			})
+		} else {
+			return Promise.resolve({
+				text: `*COTD is:* ${data.name}`
+			})
+		}
+	})
 
 	if (params.response_url) {
-		cotdPromise.then(response => {
-			fetch(params.response_url, {
-				method: "POST",
-				headers: {
-					"Content-type": "application/json"
-				},
-				body: JSON.stringify(response)
-			})
-		}, err => fetch(params.response_url, {
-			method: "POST",
-			headers: {
-				"Content-type": "application/json"
-			},
-			body: JSON.stringify({
-				text: "Sorry something went wrong :(",
-				attachments: [{
-					text: err.message
-				}]
-			})
-		}))
+		cotdPromise.then(
+			handleResponse(params.response_url),
+			handleError(params.response_url, "Sorry something went wrong :(")
+		);
 		return Promise.resolve({
-			text: `Checking for new card...`
+			text: `Revealing current card...`
 		})
 	}
-	
 	return cotdPromise;
 }
 
@@ -135,6 +151,7 @@ const cotdMap = {
 	'score': props => score(props),
 	'show': props => show(props),
 	'hint': props => hint(props),
+	'tellmewhatitisinsecret': props => tellme(props),
 	'default': props => guess(props)
 }
 
