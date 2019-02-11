@@ -14,11 +14,10 @@ const cardGuessFail = 'Failed to guess correctly!';
 const cardGuessNone = 'No Card of the day to guess! Try /CotD new';
 
 export const resolveUser = (user) => {
-	return fetch(`https://slack.com/api/users.info?user=${user}token=${process.env.SLACK_BOT_TOKEN}`, { method: 'get' })
+	return fetch(`https://slack.com/api/users.info?user=${user.toUpperCase()}&token=${process.env.SLACK_BOT_TOKEN}`, { method: 'get' })
 		.then(res => res.json())
 		.then(data => {
-			console.log("USER DATA", process.env.SLACK_BOT_TOKEN, data)
-			return data.ok ? data.user.name	: user
+			return data.ok ? data.user.real_name : user
 		})
 }
 export const newCard = (user, channel) => {
@@ -72,9 +71,6 @@ export const currentScore = (channel) => {
 		})
 		.then(data => {
 			const arr = data || [];
-
-			console.log('SCORE DATA', data)
-
 			const dataMap = Promise.all(arr.map(player => 
 				resolveUser(player.name).then(name => ({
 					title: name,
@@ -83,6 +79,7 @@ export const currentScore = (channel) => {
 			))
 
 			return dataMap.then(attachments => ({
+		    	response_type: "in_channel",
 				text: 'Current scores:',
 				attachments
 			}));
@@ -109,9 +106,6 @@ export const guessCard = (user, channel, guess) => {
 			return res.text()
 		})
 		.then(data => {
-
-			console.log(data)
-
 			if(data === cardGuessFail) {
 				return badGuess(guess);
 			} else if (data === cardGuessNone) {
@@ -121,7 +115,6 @@ export const guessCard = (user, channel, guess) => {
 			}
 		})
 		.catch(err => {
-			log.error(err);
 			return {
 				title: `Error guessing cotd`,
 				text: `*error*, ${err.message}`,
@@ -160,7 +153,6 @@ export const showCard = (channel, message = 'Guess that card!') => {
 				return noCotd();
 			} else {
 				const set = data.sets.find(set => set.image)
-				console.log('COTD', data.name)
 				return getCotd(set.cropped, message);
 			}
 		})

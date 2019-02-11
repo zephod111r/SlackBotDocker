@@ -33,7 +33,7 @@ const generate = (params) => {
 			handleError(params.response_url, "Sorry something went wrong :(")
 		);
 		return Promise.resolve({
-			text: `Checking for new card in ${params.channel_id} by ${params.user_id}...`
+			text: `Checking for new card...`
 		})
 	}
 	
