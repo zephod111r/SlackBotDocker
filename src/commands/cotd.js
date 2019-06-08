@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { newCard, showCard, getCurrentCardData, guessCard, currentScore } from '../utils/cardoftheday';
+import { safeMessage } from '../utils/constants';
 
 const handleResponse = response_url => response => 
 	fetch(response_url, {
@@ -19,7 +20,7 @@ const handleError = (response_url, text) => err =>
 		body: JSON.stringify({
 			text,
 			attachments: [{
-				text: err.message
+				text: safeMessage(err.message)
 			}]
 		})
 	})

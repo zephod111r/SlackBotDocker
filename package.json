@@ -7,7 +7,7 @@
   "license": "ISC",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "babel-node src/index.js",
+    "dev": "nodemon --exec babel-node src/index.js",
     "dist": "babel src --out-dir dist/ --copy-files",
     "clean": "rimraf ./dist/",
     "build": "npm run clean && npm run dist && npm run docker-build",
@@ -26,6 +26,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
+    "nodemon": "^1.19.1",
     "rimraf": "^2.6.3"
   }
 }

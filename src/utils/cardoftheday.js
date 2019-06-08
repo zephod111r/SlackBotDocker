@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
 import { log } from '../utils';
-import { BASE_URI, CODE } from './constants';
+import { BASE_URI, CODE, safeMessage } from './constants';
 
 const newUri = `${BASE_URI}/CardOfTheDayNew`
 const showUri = `${BASE_URI}/CardOfTheDayShow`
@@ -48,7 +48,7 @@ export const newCard = (user, channel) => {
 			log.error(err);
 			return {
 				title: `Error creating new cotd`,
-				text: `*error*, ${err.message}`,
+				text: `*error*, ${safeMessage(err.message)}`,
 		    	response_type: "in_channel",
 			}
 		})
@@ -88,7 +88,7 @@ export const currentScore = (channel) => {
 			log.error(err);
 			return {
 				title: `Error guessing cotd`,
-				text: `*error*, ${err.message}`,
+				text: `*error*, ${safeMessage(err.message)}`,
 		    	response_type: "in_channel",
 			}
 		})
@@ -117,7 +117,7 @@ export const guessCard = (user, channel, guess) => {
 		.catch(err => {
 			return {
 				title: `Error guessing cotd`,
-				text: `*error*, ${err.message}`,
+				text: `*error*, ${safeMessage(err.message)}`,
 		    	response_type: "in_channel",
 			}
 		})
@@ -160,7 +160,7 @@ export const showCard = (channel, message = 'Guess that card!') => {
 			log.error(err);
 			return {
 				title: `Error showing cotd`,
-				text: `*error*, ${err.message}`,
+				text: `*error*, ${safeMessage(err.message)}`,
 		    	response_type: "in_channel",
 			}
 		})

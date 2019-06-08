@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
 import { log } from '../utils';
-import { BASE_URI, CODE } from './constants';
+import { BASE_URI, CODE, safeMessage } from './constants';
 
 const CardAPIBase = `${BASE_URI}/Cards`;
 
@@ -28,7 +28,7 @@ const symbols = {
 	'{1000000}': ':mtg_1000000-1::mtg_1000000-2::mtg_1000000-3::mtg_1000000-4:',
 }
 const replaceSymbol = match => symbols[match] || `:mtg_${match.replace(/[\{\}\/]/g, '').toLowerCase()}:`
-const parseSymbols = string => string ? string.replace(/(\{.+?\})/g, replaceSymbol) : ''
+export const parseSymbols = string => string ? string.replace(/(\{.+?\})/g, replaceSymbol) : ''
 
 export const getCard = (card, setName) => {
 
@@ -48,7 +48,7 @@ export const getCard = (card, setName) => {
 			log.error(err);
 			return {
 				title: `No results for *${card}*`,
-				text: `*error*, ${err.message}`,
+				text: `*error*, ${safeMessage(err.message)}`,
 		    	response_type: "in_channel",
 			}
 		})

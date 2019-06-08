@@ -2,10 +2,12 @@ import express from 'express';
 import { log } from './utils';
 import * as cotd from './commands/cotd';
 import * as card from './commands/card';
+import * as find from './commands/find';
 import * as verification from './events/verification';
 import * as message from './events/message';
 import * as set from './interaction/set';
 import * as searchError from './interaction/searchError';
+import * as findPage from './interaction/findPage';
 
 const router = new express.Router();
 
@@ -16,6 +18,7 @@ router.get('/healthcheck', async (req, res) => {
 const commandMap = {
   '/cotd' : params => cotd.handleCommand(params),
   '/card' : params => card.handleCommand(params),
+  '/findCard' : params => find.handleCommand(params),
   '404': params => Promise.reject({
     code: 404,
     message: `${params.command} not found.`
@@ -35,6 +38,8 @@ router.post('/slack/command', async (req, res) => {
 const interactionMap = {
   'cardSet' : params => set.handleInteraction(params),
   'searchMiss' : params => searchError.handleInteraction(params),
+  'find-next-page' : params => findPage.handleInteraction(params),
+  'find-prev-page' : params => findPage.handleInteraction(params),
   '404': params => Promise.reject({
     code: 200,
     message: `${params.callback_id} not found.`

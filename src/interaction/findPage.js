@@ -1,16 +1,18 @@
 import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
-import { getCard } from '../utils/card';
+import { findCards, mapParams } from '../utils/find';
 import { postMessage } from '../utils/bot'
 import { safeMessage } from '../utils/constants'
 
 const handleInteraction = ({actions, original_message, channel, message_ts, response_url}) => {
-	const set = actions[0].selected_options[0].value;
-	const card = actions[0].name;
-	const cardPromise = getCard(card, set)
+	const page = actions[0].value;
+	const search = actions[0].search;
+
+	const searchParams = mapParams(params.text)
+	const searchPromise = findCards(searchParams, 0)
 
 	if (response_url) {
-		cardPromise.then(response => {
+		searchPromise.then(response => {
 			fetch(response_url, {
 				method: "POST",
 				headers: {
@@ -31,11 +33,11 @@ const handleInteraction = ({actions, original_message, channel, message_ts, resp
 			})
 		}))
 		return Promise.resolve({
-			text: `Loading *${card}* from *${set}*...`
+			text: `Loading page *${page}* for search ${searchParams.join(',')}...`
 		})
 	}
 
-	return cardPromise;
+	return searchPromise;
 }
 
 export {

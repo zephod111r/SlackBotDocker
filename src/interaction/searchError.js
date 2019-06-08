@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
 import { getCard } from '../utils/card';
 import { postMessage } from '../utils/bot'
+import { safeMessage } from '../utils/constants'
 
 const handleInteraction = ({actions, original_message, channel, message_ts, response_url}) => {
 	const card = actions[0].selected_options[0].value;
@@ -24,7 +25,7 @@ const handleInteraction = ({actions, original_message, channel, message_ts, resp
 			body: JSON.stringify({
 				text: "Sorry something went wrong :(",
 				attachments: [{
-					text: err.message
+					text: safeMessage(err.message)
 				}]
 			})
 		}))

@@ -1,12 +1,12 @@
 import fetch from 'node-fetch';
-import { getCard } from '../utils/card';
-import { safeMessage } from '../utils/constants';
+import { findCards, mapParams } from '../utils/find';
 
 const get = (params) => {
-	const cardPromise = getCard(params.text);
+	const searchParams = mapParams(params.text)
+	const searchPromise = findCards(searchParams, 0)
 	
 	if (params.response_url) {
-		cardPromise.then(response => {
+		searchPromise.then(response => {
 			fetch(params.response_url, {
 				method: "POST",
 				headers: {
@@ -27,11 +27,11 @@ const get = (params) => {
 			})
 		}))
 		return Promise.resolve({
-			text: `Searching for ${params.text}...`
+			text: `Searching with ${searchParams.join(', ')}...`
 		})
 	}
 	
-	return cardPromise;
+	return searchPromise;
 }
 
 const cardMap = {
