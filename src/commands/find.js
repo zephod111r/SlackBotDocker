@@ -27,7 +27,7 @@ const get = (params) => {
 			})
 		}))
 		return Promise.resolve({
-			text: `Searching with ${searchParams.join(', ')}...`
+			text: `Searching with ${searchParams.map(({key, val}) => `${key}=${val}`).join(', ')}...`
 		})
 	}
 	

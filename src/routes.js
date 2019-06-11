@@ -8,6 +8,7 @@ import * as message from './events/message';
 import * as set from './interaction/set';
 import * as searchError from './interaction/searchError';
 import * as findPage from './interaction/findPage';
+import { getImageFrom } from './utils/images';
 
 const router = new express.Router();
 
@@ -18,7 +19,7 @@ router.get('/healthcheck', async (req, res) => {
 const commandMap = {
   '/cotd' : params => cotd.handleCommand(params),
   '/card' : params => card.handleCommand(params),
-  '/findCard' : params => find.handleCommand(params),
+  '/findcard' : params => find.handleCommand(params),
   '404': params => Promise.reject({
     code: 404,
     message: `${params.command} not found.`
@@ -90,5 +91,26 @@ router.post('/slack/events', async (req, res) => {
     return res.status(err.code || 500).send(err.message || 'Something blew up. We\'re looking into it.');
   })
 });
+
+router.get('/slack/images', async (req, res) => {
+
+  const promise = getImageFrom(req.query.ids.split(',').map(data => data.trim()))
+
+  return promise.then(data => {
+
+    //return res.status(200).header('Content-Type', 'image/jpeg').send(data.bitmap.data, 'binary');
+    res.set('Content-Type', 'image/jpeg');
+    data.getBuffer('image/jpeg', (err, buffer) => {
+
+      console.log(buffer)
+
+      res.send(buffer);
+    });
+    
+  }, err => {
+    log.error(err);
+    return res.status(err.code || 500).send(err.message || 'Something blew up. We\'re looking into it.');
+  })
+})
 
 export default router;
