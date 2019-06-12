@@ -94,7 +94,7 @@ const getSingleCard = (data, setName) => {
         }
     ];
 
-    const setInd = setName ? res.card.sets.findIndex(set => set.setname === setName) : 0;
+    const setInd = setName ? res.card.sets.findIndex(set => set.setname === setName) : res.card.sets.findIndex(set => set.settype !== 'promo') || 0;
     const set = res.card.sets[setInd];
 
     if(set.price) {

@@ -155,7 +155,7 @@ const getCard = card => {
 const getCardRow = cards => {
 
 	const cardIds = cards.map(card => {
-		const setInd = 0;
+		let setInd = card.sets.findIndex(set => set.settype !== 'promo') || 0;
 		const id = card.sets[setInd].minature.match(/([^\/]*)\.jpeg/)
 		return id && id.length ? id[1] : null;
 	}).filter(id => id)
@@ -163,9 +163,9 @@ const getCardRow = cards => {
 	const img = `https://mtgbot-client.azurewebsites.net/slack/images?ids=${cardIds.join(',')}`
 
 	return {
-		"type": "image",
-		"image_url": img,
-		"alt_text": "cards"
+		type: "image",
+		image_url: img,
+		alt_text: "cards"
 	}
 }
 
