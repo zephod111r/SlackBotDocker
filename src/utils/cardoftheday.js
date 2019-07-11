@@ -196,7 +196,7 @@ const getCotd = (image, text = 'Guess that card!') => {
     	response_type: "in_channel",
     	attachments: [{
 			title: 'COTD',
-	        image_url: image ? image.replace("https://", "http://") : '',
+	        image_url: image ? image : '',
 	    }]
 	}
 };

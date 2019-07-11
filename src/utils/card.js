@@ -38,7 +38,7 @@ export const getCard = (card, setName) => {
 		})
 	}
 
-	return fetch(`${CardAPIBase}?code=${CODE}&name=${card}`, { method: 'get' })
+	return fetch(`${CardAPIBase}?code=${CODE}&name=${encodeURIComponent(card.trim())}`, { method: 'get' })
 		.then(res => res.json())
 		.then(data => {
 			if(data.length === 0) return getNoCard(card);
@@ -130,7 +130,7 @@ const getSingleCard = (data, setName) => {
 	    	title: res.card.name,
 	        text: parseSymbols(res.card.text),
 	        color: getCardColour(res.card),
-	        image_url: set.image ? set.image.replace("https://", "http://") : '',
+	        image_url: set.image ? set.image : '',
 	        fields,
 	        actions,
 	        callback_id: 'cardSet'
